@@ -357,3 +357,6 @@ If you are not sure what to do next, use this order:
   Use this when you want the exact draft and scoring flow.
 - `stellatro-game/stellatro_game/checker.py`
   Use this when you want the exact hand classification rules.
+
+## Note
+When submitting, please make sure to put all of your logic in your zip!
