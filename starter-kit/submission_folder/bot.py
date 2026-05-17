@@ -1,25 +1,109 @@
-from stellatro_common import GameState, PlayerTurn
-from typing import List
+from copy import deepcopy
+from itertools import combinations
+from typing import List, Sequence
+
+from stellatro_common import CardModel, GameState, JokerModel, PlayerTurn
+from stellatro_game import Card, Joker, PLAYER_CARDS, Suit, evaluate_hand
+from stellatro_game.jokers import ALL_JOKER_CLASSES, RegularJoker
+
+
+_JOKER_NAME_TO_CLASS = {joker_cls.name: joker_cls for joker_cls in ALL_JOKER_CLASSES}
+
+
+def _card_from_model(card_model: CardModel) -> Card:
+    suits = [Suit(suit) for suit in card_model.suits]
+    if not suits:
+        raise ValueError("CardModel must include at least one suit.")
+
+    card = Card(card_model.rank, suits[0])
+    for suit in suits[1:]:
+        card.add_suit(suit)
+    card.scored = card_model.scored
+    card.num_triggers = card_model.num_triggers
+    card.stella = getattr(card_model, "stella", 0)
+    return card
+
+
+def _joker_from_model(joker_model: JokerModel) -> Joker:
+    joker_cls = _JOKER_NAME_TO_CLASS.get(joker_model.name, RegularJoker)
+    return joker_cls()
+
+
+def _active_player(state: GameState) -> PlayerTurn:
+    return state.current_turn or PlayerTurn.PLAYER1
+
+
+def _hand_for_active_player(state: GameState) -> List[Card]:
+    if _active_player(state) == PlayerTurn.PLAYER1:
+        return [_card_from_model(card) for card in state.player1_hand]
+    return [_card_from_model(card) for card in state.player2_hand]
+
+
+def _jokers_for_active_player(state: GameState) -> List[Joker]:
+    if _active_player(state) == PlayerTurn.PLAYER1:
+        return [_joker_from_model(joker) for joker in state.player1_jokers]
+    return [_joker_from_model(joker) for joker in state.player2_jokers]
+
+
+def _legal_5_card_indices(hand: Sequence[Card]):
+    playable_cards = min(PLAYER_CARDS, len(hand))
+    if playable_cards < 5:
+        return
+    yield from combinations(range(playable_cards), 5)
+
+
+def _score_indices(
+    hand: Sequence[Card],
+    jokers: Sequence[Joker],
+    indices: Sequence[int],
+) -> int:
+    chosen_cards = [deepcopy(hand[index]) for index in indices]
+    return int(evaluate_hand(chosen_cards, deepcopy(list(jokers))))
+
+
+def _best_hand(hand: Sequence[Card], jokers: Sequence[Joker]) -> tuple[int, List[int]]:
+    best_score = -1
+    best_indices: List[int] = []
+
+    for indices in _legal_5_card_indices(hand):
+        try:
+            score = _score_indices(hand, jokers, indices)
+        except Exception:
+            continue
+        if score > best_score:
+            best_score = score
+            best_indices = list(indices)
+
+    if not best_indices:
+        playable_cards = min(PLAYER_CARDS, len(hand))
+        best_indices = list(range(min(5, playable_cards)))
+        best_score = 0
+
+    return best_score, best_indices
 
 
 class Bot:
     def pick_joker(self, state: GameState) -> int:
-        # jokers available to pick from (shared pool)
-        joker_pool = state.joker_pool
+        if not state.joker_pool:
+            return 0
 
-        # drafted jokers belonging to the active player
-        if state.current_turn == PlayerTurn.PLAYER1:
-            player_jokers = state.player1_jokers
-        else:
-            player_jokers = state.player2_jokers
+        hand = _hand_for_active_player(state)
+        current_jokers = _jokers_for_active_player(state)
 
-        return 0
+        best_score = -1
+        best_index = 0
+
+        for index, joker_model in enumerate(state.joker_pool):
+            candidate_joker = _joker_from_model(joker_model)
+            score, _ = _best_hand(hand, current_jokers + [candidate_joker])
+            if score > best_score:
+                best_score = score
+                best_index = index
+
+        return best_index
 
     def pick_hand(self, state: GameState) -> List[int]:
-        if state.current_turn == PlayerTurn.PLAYER1:
-            hand = state.player1_hand
-        else:
-            hand = state.player2_hand
-
-        # play the first 5 playable cards
-        return [0, 1, 2, 3, 4]
+        hand = _hand_for_active_player(state)
+        jokers = _jokers_for_active_player(state)
+        _, indices = _best_hand(hand, jokers)
+        return indices
