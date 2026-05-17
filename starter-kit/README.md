@@ -84,17 +84,9 @@ List the built-in bot aliases:
 python starter-kit/scripts/run_bot_match.py --list-bots
 ```
 
-Train the PPO-based RL bot:
-
-```powershell
-python starter-kit/bots/rl/train.py
-```
-
-Evaluate the trained RL bot:
-
-```powershell
-python starter-kit/bots/rl/eval.py
-```
+(Reinforcement-learning training components were removed from this
+starter kit. If you plan to add RL training scripts, place them under
+`starter-kit/bots/rl/` and document them here.)
 
 Package a submission zip:
 
@@ -118,15 +110,5 @@ def pick_hand(self, state) -> list[int]:
 
 Name the zip file with your team name, then upload it to
 <https://ai.acmucsd.com/portal>.
-
-## RL Bot
-
-`starter-kit/bots/rl/` contains a trainable PPO-based bot. The learned policy
-chooses jokers during the draft, while hand selection is handled by exact search
-over all 5-card hands.
-
-Start with `starter-kit/bots/rl/config.py` when changing training or evaluation
-parameters. Read `starter-kit/bots/rl/README.md` for the full RL workflow and an
-explanation of which files are useful to edit.
 
 `starter-kit` now consumes `stellatro-game` directly. New engine changes should land in `stellatro-game/`.

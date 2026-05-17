@@ -45,16 +45,6 @@ exact hand scoring to pick useful jokers and then plays its best 5-card hand.
 For a search-based bot, read `starter-kit/bots/minimax_bot.py`. It looks ahead
 through the joker draft with minimax and alpha-beta pruning.
 
-For reinforcement learning, use `starter-kit/bots/rl/`. Start with
-`starter-kit/bots/rl/config.py`, then read `starter-kit/bots/rl/README.md`.
-The RL bot learns joker drafting; it still plays hands by exact search over
-\(\binom{10}{5} = 252\) possible 5-card hands.
-
-You do not need to rewrite the game engine, GUI, tournament runner, or RL
-environment to build a competitive bot. Those pieces are infrastructure. Most
-bot work should happen in your bot file, the built-in bot examples, or the RL
-config/model files.
-
 ## Step 1: Set Up Python
 
 From the repo root, create a virtual environment and install dependencies.
