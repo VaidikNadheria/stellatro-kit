@@ -34,7 +34,6 @@ This repo is being refactored into three main surfaces:
 | Path | Purpose |
 | --- | --- |
 | `stellatro-game/` | Canonical game engine, rules, and exported game-facing APIs |
-| `stellatro-tournament/` | Tournament runner, evaluator, submissions, and legacy eval infrastructure |
 | `starter-kit/` | Bot templates, built-in bots, GUI, local assets, and starter-kit tests |
 
 Supporting package:
