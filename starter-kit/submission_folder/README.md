@@ -6,6 +6,8 @@ define a `Bot` class with:
 - `pick_joker(self, state) -> int`
 - `pick_hand(self, state) -> list[int]`
 
+PLEASE MAKE SURE ALL OF YOUR BOT LOGIC IS IN THE FOLDER
+
 Package it from the repo root.
 
 Windows PowerShell:
